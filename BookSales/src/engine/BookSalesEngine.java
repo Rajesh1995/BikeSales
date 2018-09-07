@@ -26,6 +26,7 @@ public class BookSalesEngine {
 	private List<Book> bookList = new ArrayList<>();
 	private List<Sale> saleList = new ArrayList<>();
 	private Map<String, Integer> topBooks = new LinkedHashMap<>();
+	private Map<String, Integer> topCustomers = new LinkedHashMap<>();
 
 	public void execute(Argument argument) {
 		if (!argument.validateArgs()) {
@@ -82,10 +83,12 @@ public class BookSalesEngine {
 				Iterator<Entry<String, Integer>> map = sale.getId().entrySet().iterator();
 				while (map.hasNext()) {
 					Entry<String, Integer> item = map.next();
-					if (topBooks.containsKey(item.getKey())) {
-						topBooks.put(item.getKey(), topBooks.get(item.getKey()) + item.getValue());
-					} else {
-						topBooks.put(item.getKey(), item.getValue());
+					if (bookList.stream().filter(book -> book.getId().equals(item.getKey())).count() > 0) {
+						if (topBooks.containsKey(item.getKey())) {
+							topBooks.put(item.getKey(), topBooks.get(item.getKey()) + item.getValue());
+						} else {
+							topBooks.put(item.getKey(), item.getValue());
+						}
 					}
 				}
 			}
@@ -95,6 +98,40 @@ public class BookSalesEngine {
 					.forEach(entry -> {
 						System.out.println(entry.getKey());
 					});
+		}
+
+		if (argument.getTopCustomers() != null) {
+			for (Sale sale : saleList) {
+				if (topCustomers.containsKey(sale.getEmail())) {
+					topCustomers.put(sale.getEmail(), sale.getCount() + topCustomers.get(sale.getEmail()));
+				} else {
+					topCustomers.put(sale.getEmail(), sale.getCount());
+				}
+			}
+			System.out.println("Top Customers:");
+			Stream<Entry<String, Integer>> st = topCustomers.entrySet().stream();
+			st.sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).limit(argument.getTopCustomers())
+					.forEach(entry -> {
+						System.out.println(entry.getKey());
+					});
+		}
+
+		if (argument.getSalesOnDate() != null) {
+			double total = 0;
+			for (Sale sale : saleList) {
+				if (sale.getDate().equals(argument.getSalesOnDate())) {
+					Iterator<Entry<String, Integer>> it = sale.getId().entrySet().iterator();
+					while (it.hasNext()) {
+						Entry<String, Integer> item = it.next();
+						double temp = bookList.stream().filter(book -> book.getId().equals(item.getKey())).findFirst()
+								.get().getPrice();
+						temp *= item.getValue();
+						total += temp;
+					}
+				}
+			}
+			System.out.println("Sales on date:");
+			System.out.println(argument.getSalesOnDate() + " " + total);
 		}
 
 	}

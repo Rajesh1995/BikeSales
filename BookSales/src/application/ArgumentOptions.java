@@ -50,7 +50,7 @@ public class ArgumentOptions {
 				}
 				argument.setTopCustomers(num);
 			} else if (arg.startsWith(SALESONDATE)) {
-				DateFormat format = new SimpleDateFormat("yyyy mm dd", Locale.ENGLISH);
+				DateFormat format = new SimpleDateFormat("yyyy-mm-dd", Locale.ENGLISH);
 				Date date;
 				try {
 					date = format.parse(arg.substring(SALESONDATE.length()));
